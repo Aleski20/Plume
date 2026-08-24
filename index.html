@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plume · Éditeur Markdown</title>
+<title>Plume · Éditeur Markdown pour Roleplay</title>
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="data:image/png;base64,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">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,13 +144,68 @@ textarea::placeholder{color:#4b505b}
 #out .spoiler.shown *{visibility:visible}
 #out u{text-decoration:underline}
 
-.persona{display:flex;align-items:center;gap:8px;margin-left:auto}
-.persona input[type=text]{
-  background:var(--edge-soft);border:1px solid var(--edge);border-radius:4px;
-  color:var(--ink);font:inherit;font-size:12px;padding:3px 7px;width:130px;
+/* identité dans l'en-tête */
+.identite{
+  display:flex;align-items:center;gap:8px;padding:3px 10px 3px 4px;
+  background:var(--edge-soft);border:1px solid var(--edge);border-radius:20px;
+  cursor:pointer;font:inherit;font-size:12px;color:var(--ink);
 }
-.persona input[type=color]{
-  width:24px;height:24px;padding:0;border:1px solid var(--edge);border-radius:4px;background:none;cursor:pointer;
+.identite:hover{background:#2a2d36;border-color:#3a3e49}
+.identite img{width:22px;height:22px;border-radius:50%;object-fit:cover;background:var(--dc-code-bg)}
+.identite .nom{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* modale profil */
+.voile{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.voile[hidden]{display:none}
+.modale{
+  width:100%;max-width:380px;background:var(--panel);border:1px solid var(--edge);
+  border-radius:10px;padding:20px;max-height:100%;overflow-y:auto;
+}
+.modale h2{margin:0 0 4px;font-size:15px;font-weight:600}
+.modale .aide{margin:0 0 18px;font-size:12px;color:var(--ink-dim);line-height:1.5}
+.champ{margin-bottom:14px}
+.champ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:6px}
+.champ input[type=text]{
+  width:100%;background:var(--edge-soft);border:1px solid var(--edge);border-radius:5px;
+  color:var(--ink);font:inherit;font-size:13px;padding:7px 9px;
+}
+.champ input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.ligne-avatar{display:flex;align-items:center;gap:12px}
+.ligne-avatar img{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--dc-code-bg)}
+.ligne-couleur{display:flex;align-items:center;gap:10px}
+.ligne-couleur input[type=color]{
+  width:34px;height:30px;padding:0;border:1px solid var(--edge);border-radius:5px;background:none;cursor:pointer;
+}
+.ligne-couleur .valeur{font-size:12px;color:var(--ink-dim);font-family:ui-monospace,Consolas,monospace}
+.emplacements{display:flex;gap:8px;margin-bottom:18px}
+.slot{
+  flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 6px;background:var(--edge-soft);border:1px solid var(--edge);border-radius:8px;
+  cursor:pointer;font:inherit;font-size:11px;color:var(--ink-dim);
+}
+.slot:hover{background:#2a2d36;border-color:#3a3e49}
+.slot.courant{border-color:var(--accent);color:var(--ink);background:#20222c}
+.slot img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--dc-code-bg)}
+.slot .vide{
+  width:34px;height:34px;border-radius:50%;border:1px dashed #3a3e49;
+  display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;
+}
+.slot .etiquette{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ligne-trame{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--edge-soft);border:1px solid var(--edge);border-radius:5px;padding:8px 9px;
+}
+.ligne-trame .etat{flex:1;min-width:120px;font-size:12px;color:var(--ink-dim)}
+.actions{display:flex;gap:8px;margin-top:20px}
+.actions .spacer{flex:1}
+.danger{color:var(--warn);border-color:#3a2b2c;background:#241b1c}
+.danger:hover{background:#2f2223;border-color:#5a3436}
+.note{
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--edge);
+  font-size:11px;color:var(--ink-dim);line-height:1.5;
 }
 .toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -161,7 +216,7 @@ textarea::placeholder{color:#4b505b}
 @media (max-width:860px){
   main{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
   .pane + .pane{border-left:0;border-top:1px solid var(--edge)}
-  .persona input[type=text]{width:90px}
+  .identite .nom{max-width:80px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -172,7 +227,9 @@ textarea::placeholder{color:#4b505b}
   <h1>Plume</h1>
   <div class="tagline">Éditeur Markdown pour Roleplay</div>
   <div class="spacer"></div>
+  <div id="zoneIdentite"></div>
   <div class="count" id="count">0 / 2000</div>
+  <button id="trame" title="Réinsérer le modèle de message">Trame</button>
   <button id="clear">Vider</button>
   <button class="primary" id="copy">Copier</button>
 </header>
@@ -193,13 +250,7 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
   </section>
 
   <section class="pane">
-    <div class="pane-head">
-      Aperçu
-      <div class="persona">
-        <input type="color" id="color" value="#5865f2" title="Couleur du pseudo">
-        <input type="text" id="who" value="Plume" maxlength="32">
-      </div>
-    </div>
+    <div class="pane-head">Aperçu</div>
     <div id="preview">
       <div class="msg">
         <img class="avatar" id="avatar" alt="Avatar du personnage" src="data:image/webp;base64,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">
@@ -211,6 +262,57 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
     </div>
   </section>
 </main>
+
+<div class="voile" id="voile" hidden>
+  <div class="modale" role="dialog" aria-modal="true" aria-labelledby="titreModale">
+    <h2 id="titreModale">Profils</h2>
+    <p class="aide">Trois personnages maximum. Le profil sélectionné apparaît dans l'aperçu à la place de Plume.</p>
+
+    <div class="emplacements" id="emplacements"></div>
+
+    <div class="champ">
+      <label for="fichierAvatar">Avatar</label>
+      <div class="ligne-avatar">
+        <img id="apercuAvatar" alt="">
+        <div>
+          <button id="btnAvatar" type="button">Choisir une image</button>
+          <input type="file" id="fichierAvatar" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        </div>
+      </div>
+    </div>
+
+    <div class="champ">
+      <label for="champNom">Nom du personnage</label>
+      <input type="text" id="champNom" maxlength="32" placeholder="Plume">
+    </div>
+
+    <div class="champ">
+      <label for="champCouleur">Couleur du pseudo</label>
+      <div class="ligne-couleur">
+        <input type="color" id="champCouleur" value="#5865f2">
+        <span class="valeur" id="valeurCouleur">#5865f2</span>
+      </div>
+    </div>
+
+    <div class="champ">
+      <label>Trame de départ</label>
+      <div class="ligne-trame">
+        <span class="etat" id="etatTrame">Trame par défaut</span>
+        <button id="btnCapturer" type="button" title="Enregistrer le texte actuel de l'éditeur comme trame de ce profil">Prendre l'éditeur</button>
+        <button id="btnTrameDefaut" type="button">Défaut</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="btnEnregistrer" type="button">Enregistrer</button>
+      <button id="btnAnnuler" type="button">Annuler</button>
+      <div class="spacer"></div>
+      <button class="danger" id="btnSupprimer" type="button" hidden>Supprimer</button>
+    </div>
+
+    <p class="note">Tes profils et ton brouillon restent sur cet appareil, dans ce navigateur. Rien n'est envoyé nulle part. Vider les données du navigateur les efface.</p>
+  </div>
+</div>
 
 <div class="toast" id="toast">Copié</div>
 
@@ -506,37 +608,39 @@ out.addEventListener('click', e => {
 });
 
 const toast = document.getElementById('toast');
+function signal(msg) {
+  toast.textContent = msg;
+  toast.classList.add('on');
+  setTimeout(() => toast.classList.remove('on'), 1600);
+}
+
 document.getElementById('copy').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(src.value);
-    toast.textContent = 'Copié';
+    signal('Copié');
   } catch (err) {
-    toast.textContent = 'Copie refusée par le navigateur';
+    signal('Copie refusée par le navigateur');
   }
-  toast.classList.add('on');
-  setTimeout(() => toast.classList.remove('on'), 1400);
-});
-document.getElementById('clear').addEventListener('click', () => {
-  src.value = '';
-  focusBack(0, 0);
 });
 
-const who = document.getElementById('who');
-const whoLabel = document.getElementById('whoLabel');
-const avatar = document.getElementById('avatar');
-const color = document.getElementById('color');
-function persona() {
-  whoLabel.textContent = who.value || 'Personnage';
-  whoLabel.style.color = color.value;
-}
-who.addEventListener('input', persona);
-color.addEventListener('input', persona);
-persona();
+/* ------------------------------------------------------------------
+   Stockage local
+   localStorage peut être bloqué (navigation privée, iframe cloisonnée) :
+   on retombe alors sur une copie en mémoire, valable le temps de l'onglet.
+------------------------------------------------------------------ */
+const CLE_PROFILS = 'plume.profils';
+const CLE_ACTIF = 'plume.actif';
+const CLE_BROUILLON = 'plume.brouillon';
+const CLE_ANCIENNE = 'plume.profil';
+const MAX_PROFILS = 3;
+const memoire = {};
+const stock = {
+  lire(k) { try { return localStorage.getItem(k); } catch (e) { return k in memoire ? memoire[k] : null; } },
+  ecrire(k, v) { try { localStorage.setItem(k, v); } catch (e) { if (e && e.name === 'QuotaExceededError') throw e; memoire[k] = v; } },
+  effacer(k) { try { localStorage.removeItem(k); } catch (e) { delete memoire[k]; } }
+};
 
-document.getElementById('stamp').textContent =
-  "Aujourd'hui à " + new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
-
-src.value = `## Titre de la scène
+const TRAME = `## Titre de la scène
 -# Lieu · heure · météo
 Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, c'est la mise en contexte
 *Pensée intérieure.*
@@ -547,6 +651,290 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
 ||Information cachée, twist, résultat de jet.||
 -# (HRP) Note hors roleplay.`;
 
+const AVATAR_PLUME = document.getElementById('avatar').getAttribute('src');
+const DEFAUT = { nom: 'Plume', couleur: '#5865f2', avatar: AVATAR_PLUME, trame: null };
+
+// un profil venu du stockage est une donnée non fiable : on valide champ par champ
+function assainir(p) {
+  if (!p || typeof p !== 'object') return null;
+  return {
+    id: typeof p.id === 'string' ? p.id : String(Date.now() + Math.random()),
+    nom: typeof p.nom === 'string' ? p.nom.slice(0, 32) : DEFAUT.nom,
+    couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : DEFAUT.couleur,
+    avatar: /^data:image\/(png|jpeg|webp);base64,/.test(p.avatar || '') ? p.avatar : DEFAUT.avatar,
+    trame: typeof p.trame === 'string' ? p.trame.slice(0, 8000) : null
+  };
+}
+
+function lireProfils() {
+  try {
+    const ancien = stock.lire(CLE_ANCIENNE);
+    if (ancien && !stock.lire(CLE_PROFILS)) {
+      // migration de l'ancien profil unique vers le premier emplacement
+      const p = assainir(JSON.parse(ancien));
+      if (p) {
+        stock.ecrire(CLE_PROFILS, JSON.stringify([p]));
+        stock.ecrire(CLE_ACTIF, p.id);
+      }
+      stock.effacer(CLE_ANCIENNE);
+    }
+    const brut = stock.lire(CLE_PROFILS);
+    if (!brut) return [];
+    const liste = JSON.parse(brut);
+    if (!Array.isArray(liste)) return [];
+    return liste.map(assainir).filter(Boolean).slice(0, MAX_PROFILS);
+  } catch (e) { return []; }
+}
+
+let profils = lireProfils();
+let actifId = stock.lire(CLE_ACTIF);
+const profilActif = () => profils.find(p => p.id === actifId) || null;
+const trameCourante = () => (profilActif() && profilActif().trame) || TRAME;
+
+function enregistrerProfils() {
+  stock.ecrire(CLE_PROFILS, JSON.stringify(profils));
+  if (actifId) stock.ecrire(CLE_ACTIF, actifId); else stock.effacer(CLE_ACTIF);
+}
+
+/* ------------------------------------------------------------------
+   Identité affichée
+------------------------------------------------------------------ */
+const zoneIdentite = document.getElementById('zoneIdentite');
+const whoLabel = document.getElementById('whoLabel');
+const avatar = document.getElementById('avatar');
+
+function peindreIdentite() {
+  const actif = profilActif() || DEFAUT;
+  avatar.src = actif.avatar;
+  whoLabel.textContent = actif.nom || DEFAUT.nom;
+  whoLabel.style.color = actif.couleur;
+
+  zoneIdentite.innerHTML = '';
+  const b = document.createElement('button');
+  b.type = 'button';
+  if (profilActif()) {
+    b.className = 'identite';
+    b.title = 'Changer ou modifier de profil';
+    const img = document.createElement('img');
+    img.src = actif.avatar;
+    img.alt = '';
+    const nom = document.createElement('span');
+    nom.className = 'nom';
+    nom.textContent = actif.nom;
+    b.append(img, nom);
+  } else {
+    b.textContent = profils.length ? 'Choisir un profil' : 'Créer un profil';
+  }
+  b.addEventListener('click', ouvrirModale);
+  zoneIdentite.appendChild(b);
+}
+
+/* ------------------------------------------------------------------
+   Modale profils
+------------------------------------------------------------------ */
+const voile = document.getElementById('voile');
+const emplacements = document.getElementById('emplacements');
+const champNom = document.getElementById('champNom');
+const champCouleur = document.getElementById('champCouleur');
+const valeurCouleur = document.getElementById('valeurCouleur');
+const apercuAvatar = document.getElementById('apercuAvatar');
+const fichierAvatar = document.getElementById('fichierAvatar');
+const btnSupprimer = document.getElementById('btnSupprimer');
+const etatTrame = document.getElementById('etatTrame');
+
+// profil en cours d'édition dans le formulaire ; id null = nouvel emplacement
+let brouillonProfil = null;
+
+function chargerFormulaire(p) {
+  brouillonProfil = p
+    ? { id: p.id, nom: p.nom, couleur: p.couleur, avatar: p.avatar, trame: p.trame }
+    : { id: null, nom: '', couleur: DEFAUT.couleur, avatar: DEFAUT.avatar, trame: null };
+  champNom.value = brouillonProfil.nom;
+  champCouleur.value = brouillonProfil.couleur;
+  valeurCouleur.textContent = brouillonProfil.couleur;
+  apercuAvatar.src = brouillonProfil.avatar;
+  btnSupprimer.hidden = !brouillonProfil.id;
+  peindreTrame();
+  peindreEmplacements();
+}
+
+function peindreTrame() {
+  etatTrame.textContent = brouillonProfil.trame
+    ? 'Trame personnalisée, ' + brouillonProfil.trame.length + ' caractères'
+    : 'Trame par défaut';
+}
+
+function peindreEmplacements() {
+  emplacements.innerHTML = '';
+  for (let i = 0; i < MAX_PROFILS; i++) {
+    const p = profils[i];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'slot';
+    if (p && brouillonProfil.id === p.id) b.classList.add('courant');
+    const et = document.createElement('span');
+    et.className = 'etiquette';
+    if (p) {
+      const img = document.createElement('img');
+      img.src = p.avatar;
+      img.alt = '';
+      et.textContent = p.nom;
+      b.append(img, et);
+      b.addEventListener('click', () => chargerFormulaire(p));
+    } else {
+      const vide = document.createElement('span');
+      vide.className = 'vide';
+      vide.textContent = '+';
+      et.textContent = 'Libre';
+      b.append(vide, et);
+      b.addEventListener('click', () => chargerFormulaire(null));
+      if (brouillonProfil.id === null) b.classList.add('courant');
+    }
+    emplacements.appendChild(b);
+  }
+}
+
+function ouvrirModale() {
+  chargerFormulaire(profilActif() || profils[0] || null);
+  voile.hidden = false;
+  champNom.focus();
+}
+
+function fermerModale() {
+  voile.hidden = true;
+  fichierAvatar.value = '';
+}
+
+champCouleur.addEventListener('input', () => {
+  valeurCouleur.textContent = champCouleur.value;
+});
+
+document.getElementById('btnCapturer').addEventListener('click', () => {
+  const texte = src.value.trim();
+  if (!texte) { signal('Éditeur vide, rien à enregistrer'); return; }
+  const premiere = texte.split('\n')[0].slice(0, 60);
+  if (!confirm('Enregistrer le texte de l\'éditeur comme trame de ce profil ?\n\nIl commence par :\n' + premiere)) return;
+  brouillonProfil.trame = src.value;
+  peindreTrame();
+});
+
+document.getElementById('btnTrameDefaut').addEventListener('click', () => {
+  brouillonProfil.trame = null;
+  peindreTrame();
+});
+
+document.getElementById('btnAvatar').addEventListener('click', () => fichierAvatar.click());
+
+fichierAvatar.addEventListener('change', () => {
+  const f = fichierAvatar.files[0];
+  if (!f) return;
+  if (f.size > 8 * 1024 * 1024) { signal('Image trop lourde, 8 Mo maximum'); return; }
+  const lecteur = new FileReader();
+  lecteur.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // recadrage carré centré puis réduction à 128 px
+      const cote = Math.min(img.width, img.height);
+      const c = document.createElement('canvas');
+      c.width = c.height = 128;
+      c.getContext('2d').drawImage(
+        img, (img.width - cote) / 2, (img.height - cote) / 2, cote, cote, 0, 0, 128, 128
+      );
+      let sortie = c.toDataURL('image/webp', 0.9);
+      if (!sortie.startsWith('data:image/webp')) sortie = c.toDataURL('image/png');
+      brouillonProfil.avatar = sortie;
+      apercuAvatar.src = sortie;
+    };
+    img.onerror = () => signal('Image illisible');
+    img.src = lecteur.result;
+  };
+  lecteur.onerror = () => signal('Lecture du fichier impossible');
+  lecteur.readAsDataURL(f);
+});
+
+document.getElementById('btnEnregistrer').addEventListener('click', () => {
+  const nouveau = {
+    id: brouillonProfil.id || String(Date.now()),
+    nom: champNom.value.trim() || DEFAUT.nom,
+    couleur: champCouleur.value,
+    avatar: brouillonProfil.avatar || DEFAUT.avatar,
+    trame: brouillonProfil.trame
+  };
+  const i = profils.findIndex(p => p.id === nouveau.id);
+  if (i === -1 && profils.length >= MAX_PROFILS) {
+    signal(MAX_PROFILS + ' profils maximum, supprimes-en un');
+    return;
+  }
+  const avant = profils.slice();
+  if (i === -1) profils.push(nouveau); else profils[i] = nouveau;
+  actifId = nouveau.id;
+  try {
+    enregistrerProfils();
+  } catch (e) {
+    profils = avant;
+    signal('Stockage plein, essaie un avatar plus léger');
+    return;
+  }
+  peindreIdentite();
+  fermerModale();
+  signal('Profil enregistré');
+});
+
+document.getElementById('btnAnnuler').addEventListener('click', fermerModale);
+
+btnSupprimer.addEventListener('click', () => {
+  const dernier = profils.length === 1;
+  const message = dernier
+    ? 'Supprimer ce profil ? C\'était le dernier : le brouillon en cours sera effacé lui aussi et tout repart de zéro.'
+    : 'Supprimer ce profil ? Les autres et ton brouillon ne bougent pas.';
+  if (!confirm(message)) return;
+  profils = profils.filter(p => p.id !== brouillonProfil.id);
+  if (actifId === brouillonProfil.id) actifId = profils.length ? profils[0].id : null;
+  enregistrerProfils();
+  if (dernier) {
+    stock.effacer(CLE_BROUILLON);
+    src.value = TRAME;
+    update();
+  }
+  peindreIdentite();
+  fermerModale();
+  signal('Profil supprimé');
+});
+
+voile.addEventListener('click', e => { if (e.target === voile) fermerModale(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !voile.hidden) fermerModale(); });
+
+/* ------------------------------------------------------------------
+   Brouillon : sauvegarde automatique, un demi-délai après la frappe
+------------------------------------------------------------------ */
+let minuteur;
+src.addEventListener('input', () => {
+  clearTimeout(minuteur);
+  minuteur = setTimeout(() => {
+    try { stock.ecrire(CLE_BROUILLON, src.value); } catch (e) { signal('Stockage plein, brouillon non enregistré'); }
+  }, 500);
+});
+
+document.getElementById('trame').addEventListener('click', () => {
+  src.value = trameCourante();
+  try { stock.ecrire(CLE_BROUILLON, src.value); } catch (e) {}
+  focusBack(src.value.length, src.value.length);
+});
+
+document.getElementById('clear').addEventListener('click', () => {
+  if (src.value.trim().length > 200 && !confirm('Vider l\'éditeur ? Le texte en cours sera perdu.')) return;
+  src.value = '';
+  stock.effacer(CLE_BROUILLON);
+  focusBack(0, 0);
+});
+
+document.getElementById('stamp').textContent =
+  "Aujourd'hui à " + new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+
+const brouillon = stock.lire(CLE_BROUILLON);
+src.value = brouillon === null ? trameCourante() : brouillon;
+
+peindreIdentite();
 update();
 </script>
 </body>
