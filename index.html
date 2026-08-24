@@ -82,6 +82,33 @@ main{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
 .toolbar .sep{width:1px;background:var(--edge);margin:2px 4px}
 .toolbar button{padding:4px 8px;min-width:30px}
 
+/* bandeau Tupperbox */
+.tupper{
+  display:flex;align-items:center;gap:10px;padding:7px 12px;
+  border-bottom:1px solid var(--edge);background:var(--panel);
+}
+.bascule{position:relative;display:inline-flex;flex:0 0 34px;width:34px;height:19px;cursor:pointer}
+.bascule input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.piste{
+  position:absolute;inset:0;border-radius:19px;background:#3a3e49;
+  transition:background .15s;pointer-events:none;
+}
+.piste::before{
+  content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#c8ccd4;transition:transform .15s;
+}
+.bascule input:checked + .piste{background:var(--accent)}
+.bascule input:checked + .piste::before{transform:translateX(15px);background:#fff}
+.bascule input:focus-visible + .piste{outline:2px solid var(--accent);outline-offset:2px}
+.tupper .libelle{font-size:12px;color:var(--ink-dim);flex:0 0 auto}
+.tupper input[type=text]{
+  flex:1;min-width:0;background:#101116;border:1px solid var(--edge);border-radius:5px;
+  color:#dfe3ea;font-family:ui-monospace,Consolas,monospace;font-size:12px;padding:5px 8px;
+}
+.tupper input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.tupper input[type=text]:disabled{opacity:.45}
+@media (max-width:640px){.tupper .libelle{display:none}}
+
 textarea{
   flex:1;resize:none;border:0;outline:0;padding:16px 18px;
   background:#101116;color:#dfe3ea;
@@ -237,6 +264,14 @@ textarea::placeholder{color:#4b505b}
 <main>
   <section class="pane">
     <div class="toolbar" id="toolbar"></div>
+    <div class="tupper">
+      <label class="bascule" title="Ajouter le tag Tupperbox à la copie">
+        <input type="checkbox" id="tupperActif">
+        <span class="piste"></span>
+      </label>
+      <span class="libelle">Tupperbox</span>
+      <input type="text" id="tupperTag" placeholder="Plume:text" maxlength="64" spellcheck="false" disabled>
+    </div>
     <textarea id="src" spellcheck="true" placeholder="## Titre de la scène
 -# Lieu · heure · météo
 Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, c'est la mise en contexte
@@ -497,7 +532,7 @@ function update() {
   out.innerHTML = src.value.trim()
     ? render(src.value)
     : '<div class="empty">Le rendu s\'affichera ici, à l\'identique de Discord.</div>';
-  const n = src.value.length;
+  const n = texteACopier().length;
   count.textContent = n + ' / 2000';
   count.classList.toggle('over', n > 2000);
 }
@@ -616,8 +651,8 @@ function signal(msg) {
 
 document.getElementById('copy').addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText(src.value);
-    signal('Copié');
+    await navigator.clipboard.writeText(texteACopier());
+    signal(tupperActif.checked && tupperTag.value.trim() ? 'Copié avec le tag' : 'Copié');
   } catch (err) {
     signal('Copie refusée par le navigateur');
   }
@@ -631,6 +666,7 @@ document.getElementById('copy').addEventListener('click', async () => {
 const CLE_PROFILS = 'plume.profils';
 const CLE_ACTIF = 'plume.actif';
 const CLE_BROUILLON = 'plume.brouillon';
+const CLE_TUPPER = 'plume.tupper';
 const CLE_ANCIENNE = 'plume.profil';
 const MAX_PROFILS = 3;
 const memoire = {};
@@ -652,7 +688,7 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
 -# (HRP) Note hors roleplay.`;
 
 const AVATAR_PLUME = document.getElementById('avatar').getAttribute('src');
-const DEFAUT = { nom: 'Plume', couleur: '#5865f2', avatar: AVATAR_PLUME, trame: null };
+const DEFAUT = { nom: 'Plume', couleur: '#5865f2', avatar: AVATAR_PLUME, trame: null, tupper: '', tupperActif: false };
 
 // un profil venu du stockage est une donnée non fiable : on valide champ par champ
 function assainir(p) {
@@ -662,7 +698,9 @@ function assainir(p) {
     nom: typeof p.nom === 'string' ? p.nom.slice(0, 32) : DEFAUT.nom,
     couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : DEFAUT.couleur,
     avatar: /^data:image\/(png|jpeg|webp);base64,/.test(p.avatar || '') ? p.avatar : DEFAUT.avatar,
-    trame: typeof p.trame === 'string' ? p.trame.slice(0, 8000) : null
+    trame: typeof p.trame === 'string' ? p.trame.slice(0, 8000) : null,
+    tupper: typeof p.tupper === 'string' ? p.tupper.slice(0, 64) : '',
+    tupperActif: p.tupperActif === true
   };
 }
 
@@ -727,6 +765,7 @@ function peindreIdentite() {
   }
   b.addEventListener('click', ouvrirModale);
   zoneIdentite.appendChild(b);
+  synchroniserTupper();
 }
 
 /* ------------------------------------------------------------------
@@ -747,8 +786,8 @@ let brouillonProfil = null;
 
 function chargerFormulaire(p) {
   brouillonProfil = p
-    ? { id: p.id, nom: p.nom, couleur: p.couleur, avatar: p.avatar, trame: p.trame }
-    : { id: null, nom: '', couleur: DEFAUT.couleur, avatar: DEFAUT.avatar, trame: null };
+    ? { id: p.id, nom: p.nom, couleur: p.couleur, avatar: p.avatar, trame: p.trame, tupper: p.tupper, tupperActif: p.tupperActif }
+    : { id: null, nom: '', couleur: DEFAUT.couleur, avatar: DEFAUT.avatar, trame: null, tupper: '', tupperActif: false };
   champNom.value = brouillonProfil.nom;
   champCouleur.value = brouillonProfil.couleur;
   valeurCouleur.textContent = brouillonProfil.couleur;
@@ -858,7 +897,9 @@ document.getElementById('btnEnregistrer').addEventListener('click', () => {
     nom: champNom.value.trim() || DEFAUT.nom,
     couleur: champCouleur.value,
     avatar: brouillonProfil.avatar || DEFAUT.avatar,
-    trame: brouillonProfil.trame
+    trame: brouillonProfil.trame,
+    tupper: brouillonProfil.tupper || '',
+    tupperActif: brouillonProfil.tupperActif === true
   };
   const i = profils.findIndex(p => p.id === nouveau.id);
   if (i === -1 && profils.length >= MAX_PROFILS) {
@@ -926,6 +967,72 @@ document.getElementById('clear').addEventListener('click', () => {
   src.value = '';
   stock.effacer(CLE_BROUILLON);
   focusBack(0, 0);
+});
+
+/* ------------------------------------------------------------------
+   Tupperbox
+   Le tag n'apparaît pas dans l'aperçu : Discord ne le voit qu'une
+   fraction de seconde avant que le bot ne le consomme.
+   Si le tag contient le mot "text", il est remplacé par le message,
+   ce qui gère aussi les formats encadrants du type [text].
+   Sinon le tag est simplement collé devant.
+------------------------------------------------------------------ */
+const tupperActif = document.getElementById('tupperActif');
+const tupperTag = document.getElementById('tupperTag');
+
+function texteACopier() {
+  const tag = tupperTag.value.trim();
+  if (!tupperActif.checked || !tag) return src.value;
+  const m = tag.match(/^([\s\S]*?)\btext\b([\s\S]*)$/);
+  return m ? m[1] + src.value + m[2] : tag + src.value;
+}
+
+// le tag appartient au personnage : il vit dans le profil actif.
+// Sans profil, il retombe sur une clé globale pour rester utilisable.
+function enregistrerTupper() {
+  const p = profilActif();
+  if (p) {
+    p.tupperActif = tupperActif.checked;
+    p.tupper = tupperTag.value.slice(0, 64);
+    try { enregistrerProfils(); } catch (e) { signal('Stockage plein, tag non enregistré'); }
+    return;
+  }
+  try {
+    stock.ecrire(CLE_TUPPER, JSON.stringify({ actif: tupperActif.checked, tag: tupperTag.value }));
+  } catch (e) {}
+}
+
+function synchroniserTupper() {
+  const p = profilActif();
+  if (p) {
+    tupperActif.checked = p.tupperActif === true;
+    tupperTag.value = p.tupper || '';
+  } else {
+    try {
+      const t = JSON.parse(stock.lire(CLE_TUPPER) || '{}');
+      tupperActif.checked = t.actif === true;
+      tupperTag.value = typeof t.tag === 'string' ? t.tag.slice(0, 64) : '';
+    } catch (e) {
+      tupperActif.checked = false;
+      tupperTag.value = '';
+    }
+  }
+  tupperTag.disabled = !tupperActif.checked;
+  tupperTag.placeholder = ((p && p.nom) || 'Plume') + ':text';
+}
+
+tupperActif.addEventListener('change', () => {
+  tupperTag.disabled = !tupperActif.checked;
+  if (tupperActif.checked) tupperTag.focus();
+  enregistrerTupper();
+  update();
+});
+
+let minuteurTupper;
+tupperTag.addEventListener('input', () => {
+  clearTimeout(minuteurTupper);
+  minuteurTupper = setTimeout(enregistrerTupper, 400);
+  update();
 });
 
 document.getElementById('stamp').textContent =
