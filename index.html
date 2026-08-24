@@ -235,6 +235,23 @@ textarea::placeholder{color:#4b505b}
   margin-top:16px;padding-top:14px;border-top:1px solid var(--edge);
   font-size:11px;color:var(--ink-dim);line-height:1.5;
 }
+.credit{display:block;margin-top:8px;opacity:.75}
+
+/* découpe en plusieurs messages */
+.modale.large{max-width:520px}
+.partie{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:8px;
+  background:var(--edge-soft);border:1px solid var(--edge);border-radius:6px;
+}
+.partie.faite{border-color:#2f4a35;background:#1b2620}
+.partie .rang{
+  flex:0 0 auto;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);
+}
+.partie .extrait{
+  flex:1;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--ink-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.partie .poids{flex:0 0 auto;font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
 .toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
   background:var(--accent);color:#fff;font-size:13px;font-weight:600;
@@ -370,7 +387,19 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
       <button class="danger" id="btnSupprimer" type="button" hidden>Supprimer</button>
     </div>
 
-    <p class="note">Tes profils et ton brouillon restent sur cet appareil, dans ce navigateur. Rien n'est envoyé nulle part. Vider les données du navigateur les efface. <br> Fait par @alesk1_</p>
+    <p class="note">Tes profils et ton brouillon restent sur cet appareil, dans ce navigateur. Rien n'est envoyé nulle part. Vider les données du navigateur les efface.<span class="credit">Fait par @alesk1_</span></p>
+  </div>
+</div>
+
+<div class="voile" id="voileDecoupe" hidden>
+  <div class="modale large" role="dialog" aria-modal="true" aria-labelledby="titreDecoupe">
+    <h2 id="titreDecoupe">Message trop long</h2>
+    <p class="aide">Discord s'arrête à 2000 caractères. Copie chaque partie et envoie-les dans l'ordre.</p>
+    <div id="listeParties"></div>
+    <p class="note" id="noteDecoupe"></p>
+    <div class="actions">
+      <button id="btnFermerDecoupe" type="button">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -675,12 +704,23 @@ function signal(msg) {
   setTimeout(() => toast.classList.remove('on'), 1600);
 }
 
-document.getElementById('copy').addEventListener('click', async () => {
+const LIMITE = 2000;
+
+async function copier(texte) {
   try {
-    await navigator.clipboard.writeText(texteACopier());
-    signal(tupperActif.checked && tupperTag.value.trim() ? 'Copié avec le tag' : 'Copié');
+    await navigator.clipboard.writeText(texte);
+    return true;
   } catch (err) {
     signal('Copie refusée par le navigateur');
+    return false;
+  }
+}
+
+document.getElementById('copy').addEventListener('click', async () => {
+  const texte = texteACopier();
+  if (texte.length > LIMITE) { ouvrirDecoupe(); return; }
+  if (await copier(texte)) {
+    signal(tupperActif.checked && tupperTag.value.trim() ? 'Copié avec le tag' : 'Copié');
   }
 });
 
@@ -1015,6 +1055,89 @@ document.getElementById('clear').addEventListener('click', () => {
 });
 
 /* ------------------------------------------------------------------
+   Découpe en plusieurs messages
+   On coupe sur le séparateur le plus large disponible : ligne vide,
+   puis retour simple, puis espace. Un bloc de code coupé en deux est
+   refermé et rouvert pour que chaque partie reste valide seule.
+------------------------------------------------------------------ */
+const voileDecoupe = document.getElementById('voileDecoupe');
+const listeParties = document.getElementById('listeParties');
+const noteDecoupe = document.getElementById('noteDecoupe');
+
+function decouperTexte(txt, budget) {
+  const parts = [];
+  let reste = txt;
+  while (reste.length > budget) {
+    const fenetre = reste.slice(0, budget + 1);
+    let coupe = -1, saut = 0;
+    for (const sep of ['\n\n', '\n', ' ']) {
+      const i = fenetre.lastIndexOf(sep);
+      if (i > budget * 0.3) { coupe = i; saut = sep.length; break; }
+    }
+    if (coupe === -1) { coupe = budget; saut = 0; }
+    parts.push(reste.slice(0, coupe));
+    reste = reste.slice(coupe + saut).replace(/^\n+/, '');
+  }
+  if (reste.trim()) parts.push(reste);
+  for (let i = 0; i < parts.length - 1; i++) {
+    if ((parts[i].match(/```/g) || []).length % 2 === 1) {
+      parts[i] += '\n```';
+      parts[i + 1] = '```\n' + parts[i + 1];
+    }
+  }
+  return parts;
+}
+
+function ouvrirDecoupe() {
+  const e = enveloppe();
+  // marge de 8 caractères pour les délimiteurs de bloc de code éventuels
+  const budget = LIMITE - e.avant.length - e.apres.length - 8;
+  const morceaux = decouperTexte(src.value, budget).map(m => e.avant + m + e.apres);
+
+  listeParties.innerHTML = '';
+  morceaux.forEach((texte, i) => {
+    const ligne = document.createElement('div');
+    ligne.className = 'partie';
+
+    const rang = document.createElement('span');
+    rang.className = 'rang';
+    rang.textContent = (i + 1) + '/' + morceaux.length;
+
+    const extrait = document.createElement('span');
+    extrait.className = 'extrait';
+    extrait.textContent = texte.split('\n').find(l => l.trim()) || '(vide)';
+
+    const poids = document.createElement('span');
+    poids.className = 'poids';
+    poids.textContent = texte.length;
+
+    const bouton = document.createElement('button');
+    bouton.type = 'button';
+    bouton.textContent = 'Copier';
+    bouton.addEventListener('click', async () => {
+      if (!await copier(texte)) return;
+      ligne.classList.add('faite');
+      bouton.textContent = 'Copié';
+      signal('Partie ' + (i + 1) + ' copiée');
+    });
+
+    ligne.append(rang, extrait, poids, bouton);
+    listeParties.appendChild(ligne);
+  });
+
+  noteDecoupe.textContent = e.avant || e.apres
+    ? 'Ton tag Tupperbox est repris sur chaque partie. Vérifie la coupure : un gras ou un italique ouvert dans une partie et fermé dans la suivante ne fonctionnera pas.'
+    : 'Vérifie la coupure : un gras ou un italique ouvert dans une partie et fermé dans la suivante ne fonctionnera pas.';
+
+  voileDecoupe.hidden = false;
+}
+
+function fermerDecoupe() { voileDecoupe.hidden = true; }
+document.getElementById('btnFermerDecoupe').addEventListener('click', fermerDecoupe);
+voileDecoupe.addEventListener('click', e => { if (e.target === voileDecoupe) fermerDecoupe(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !voileDecoupe.hidden) fermerDecoupe(); });
+
+/* ------------------------------------------------------------------
    Tupperbox
    Le tag n'apparaît pas dans l'aperçu : Discord ne le voit qu'une
    fraction de seconde avant que le bot ne le consomme.
@@ -1025,11 +1148,16 @@ document.getElementById('clear').addEventListener('click', () => {
 const tupperActif = document.getElementById('tupperActif');
 const tupperTag = document.getElementById('tupperTag');
 
-function texteACopier() {
+function enveloppe() {
   const tag = tupperTag.value.trim();
-  if (!tupperActif.checked || !tag) return src.value;
+  if (!tupperActif.checked || !tag) return { avant: '', apres: '' };
   const m = tag.match(/^([\s\S]*?)\btext\b([\s\S]*)$/);
-  return m ? m[1] + src.value + m[2] : tag + src.value;
+  return m ? { avant: m[1], apres: m[2] } : { avant: tag, apres: '' };
+}
+
+function texteACopier() {
+  const e = enveloppe();
+  return e.avant + src.value + e.apres;
 }
 
 // le tag appartient au personnage : il vit dans le profil actif.
