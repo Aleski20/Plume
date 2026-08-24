@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plume · Éditeur Markdown pour Roleplay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1014;
+  --panel:#17181d;
+  --edge:#26282f;
+  --edge-soft:#1e2026;
+  --ink:#c8ccd4;
+  --ink-dim:#7c828e;
+  --accent:#5865f2;
+  --warn:#f0776c;
+  /* zone d'aperçu : couleurs Discord dark */
+  --dc-bg:#313338;
+  --dc-text:#dbdee1;
+  --dc-muted:#949ba4;
+  --dc-code-bg:#2b2d31;
+  --dc-code-edge:#1e1f22;
+  --dc-quote:#4e5058;
+  --dc-link:#00a8fc;
+  --dc-mention-bg:rgba(88,101,242,.3);
+  --dc-mention-ink:#c9cdfb;
+  --dc-spoiler:#3b3d44;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  display:flex;flex-direction:column;
+}
+header{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 18px;border-bottom:1px solid var(--edge);background:var(--panel);
+}
+header{align-items:baseline}
+header h1{
+  margin:0;font-family:"Pinyon Script","Segoe Script","Brush Script MT",cursive;
+  font-size:34px;font-weight:400;line-height:1;letter-spacing:.01em;
+  color:#eef1f6;
+}
+.tagline{
+  font-size:11px;color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase;
+  padding-left:4px;
+}
+@media (max-width:640px){.tagline{display:none}}
+.spacer{flex:1}
+.count{font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.count.over{color:var(--warn);font-weight:600}
+button{
+  font:inherit;font-size:12px;color:var(--ink);background:var(--edge-soft);
+  border:1px solid var(--edge);border-radius:5px;padding:5px 9px;cursor:pointer;
+  transition:background .12s,border-color .12s,color .12s;
+}
+button:hover{background:#2a2d36;border-color:#3a3e49}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.primary:hover{background:#4752c4;border-color:#4752c4}
+
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
+.pane{display:flex;flex-direction:column;min-width:0;min-height:0}
+.pane + .pane{border-left:1px solid var(--edge)}
+.pane-head{
+  padding:7px 14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-dim);border-bottom:1px solid var(--edge);background:var(--panel);
+  display:flex;align-items:center;gap:10px;min-height:34px;
+}
+.toolbar{
+  display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;
+  border-bottom:1px solid var(--edge);background:var(--panel);
+}
+.toolbar .sep{width:1px;background:var(--edge);margin:2px 4px}
+.toolbar button{padding:4px 8px;min-width:30px}
+
+textarea{
+  flex:1;resize:none;border:0;outline:0;padding:16px 18px;
+  background:#101116;color:#dfe3ea;
+  font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  font-size:14px;line-height:1.65;tab-size:2;
+}
+textarea::placeholder{color:#4b505b}
+
+#preview{
+  flex:1;overflow-y:auto;background:var(--dc-bg);color:var(--dc-text);
+  padding:16px 18px 40px;font-size:16px;line-height:1.375;
+  overflow-wrap:break-word;word-break:break-word;
+}
+.msg{display:flex;gap:16px}
+.avatar{
+  width:40px;height:40px;border-radius:50%;flex:0 0 40px;margin-top:2px;
+  object-fit:cover;background:var(--dc-code-bg);
+}
+.body{flex:1;min-width:0}
+.who{font-size:16px;font-weight:500;line-height:1.375;margin-bottom:2px}
+.stamp{font-size:12px;color:var(--dc-muted);margin-left:8px;font-weight:400}
+
+#out .para{margin:0}
+#out .empty{color:var(--dc-muted);font-style:italic}
+#out h1{font-size:24px;margin:16px 0 8px;font-weight:700;line-height:1.375}
+#out h2{font-size:20px;margin:16px 0 8px;font-weight:700;line-height:1.375}
+#out h3{font-size:16px;margin:16px 0 8px;font-weight:700;line-height:1.375}
+#out > :first-child{margin-top:0}
+#out .subtext{font-size:12.8px;color:var(--dc-muted);line-height:1.3}
+#out blockquote{display:flex;margin:4px 0;padding:0}
+#out blockquote::before{
+  content:"";flex:0 0 4px;width:4px;border-radius:4px;
+  background:var(--dc-quote);margin-right:8px;
+}
+#out .qbody{flex:1;min-width:0;padding-right:4px}
+#out ul,#out ol{margin:4px 0;padding-left:22px}
+#out ul{list-style:disc}
+#out ul ul{list-style:circle}
+#out ul ul ul{list-style:square}
+#out li{margin:2px 0}
+#out code{
+  background:var(--dc-code-bg);border:1px solid var(--dc-code-edge);border-radius:4px;
+  padding:1px 3px;font-size:14px;font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;
+}
+#out pre{
+  background:var(--dc-code-bg);border:1px solid var(--dc-code-edge);border-radius:4px;
+  padding:8px 10px;margin:6px 0;overflow-x:auto;
+}
+#out pre code{background:none;border:0;padding:0;font-size:13.6px;line-height:1.35;display:block}
+#out a{color:var(--dc-link);text-decoration:none}
+#out a:hover{text-decoration:underline}
+#out .mention{
+  background:var(--dc-mention-bg);color:var(--dc-mention-ink);border-radius:4px;
+  padding:0 2px;font-weight:500;cursor:pointer;
+}
+#out .stampchip{background:var(--dc-spoiler);border-radius:3px;padding:0 2px}
+#out .spoiler{background:var(--dc-spoiler);color:transparent;border-radius:4px;cursor:pointer}
+#out .spoiler *{visibility:hidden}
+#out .spoiler.shown{background:rgba(255,255,255,.1);color:inherit}
+#out .spoiler.shown *{visibility:visible}
+#out u{text-decoration:underline}
+
+.persona{display:flex;align-items:center;gap:8px;margin-left:auto}
+.persona input[type=text]{
+  background:var(--edge-soft);border:1px solid var(--edge);border-radius:4px;
+  color:var(--ink);font:inherit;font-size:12px;padding:3px 7px;width:130px;
+}
+.persona input[type=color]{
+  width:24px;height:24px;padding:0;border:1px solid var(--edge);border-radius:4px;background:none;cursor:pointer;
+}
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--accent);color:#fff;font-size:13px;font-weight:600;
+  padding:9px 16px;border-radius:6px;opacity:0;pointer-events:none;transition:.18s;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:860px){
+  main{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+  .pane + .pane{border-left:0;border-top:1px solid var(--edge)}
+  .persona input[type=text]{width:90px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Plume</h1>
+  <div class="tagline">Éditeur Markdown pour Roleplay</div>
+  <div class="spacer"></div>
+  <div class="count" id="count">0 / 2000</div>
+  <button id="clear">Vider</button>
+  <button class="primary" id="copy">Copier</button>
+</header>
+
+<main>
+  <section class="pane">
+    <div class="toolbar" id="toolbar"></div>
+    <textarea id="src" spellcheck="true" placeholder="## Titre de la scène
+-# Lieu · heure · météo
+Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, c'est la mise en contexte
+*Pensée intérieure.*
+> Dialogue courant du personnage.
+**« Réplique impactante ou prononcée à haute voix. »**
+`Voix qui vient d'ailleurs : radio, téléphone, panneau, communiqué.`
+## **CRI OU NOM DE TECHNIQUE !**
+||Information cachée, twist, résultat de jet.||
+-# (HRP) Note hors roleplay."></textarea>
+  </section>
+
+  <section class="pane">
+    <div class="pane-head">
+      Aperçu
+      <div class="persona">
+        <input type="color" id="color" value="#5865f2" title="Couleur du pseudo">
+        <input type="text" id="who" value="Takeshi Matsumoto" maxlength="32">
+      </div>
+    </div>
+    <div id="preview">
+      <div class="msg">
+        <img class="avatar" id="avatar" alt="Avatar du personnage" src="data:image/webp;base64,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">
+        <div class="body">
+          <div class="who"><span id="whoLabel">Takeshi Matsumoto</span><span class="stamp" id="stamp"></span></div>
+          <div id="out"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast">Copié</div>
+
+<!-- PARSER:START -->
+<script>
+/* ------------------------------------------------------------------
+   Parseur markdown Discord (aucune dépendance au DOM)
+   1. tokenisation : code, échappements, balises <...>
+   2. échappement HTML  (on n'échappe PAS ">" : les citations en dépendent)
+   3. analyse par blocs : titres, subtext, listes, citations, paragraphes
+   4. analyse inline récursive sur chaque bloc
+   5. détokenisation
+------------------------------------------------------------------ */
+let TOK = [];
+const MARK = '\u0000';
+const tok = html => { TOK.push(html); return MARK + (TOK.length - 1) + MARK; };
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+const TS_FMT = {
+  t: { hour: '2-digit', minute: '2-digit' },
+  T: { hour: '2-digit', minute: '2-digit', second: '2-digit' },
+  d: { day: '2-digit', month: '2-digit', year: 'numeric' },
+  D: { day: 'numeric', month: 'long', year: 'numeric' },
+  f: { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' },
+  F: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+};
+function stampText(unix, style) {
+  const d = new Date(unix * 1000);
+  if (isNaN(d.getTime())) return 'date invalide';
+  if (style === 'R') {
+    const diff = (unix * 1000 - Date.now()) / 1000, abs = Math.abs(diff);
+    const units = [[31536000, 'year'], [2592000, 'month'], [86400, 'day'], [3600, 'hour'], [60, 'minute'], [1, 'second']];
+    const [size, name] = units.find(u => abs >= u[0]) || [1, 'second'];
+    return new Intl.RelativeTimeFormat('fr-FR', { numeric: 'auto' }).format(Math.round(diff / size), name);
+  }
+  return new Intl.DateTimeFormat('fr-FR', TS_FMT[style] || TS_FMT.f).format(d);
+}
+
+function pretokenize(raw) {
+  let s = raw;
+  s = s.replace(/```(?:([a-z0-9+#.\-]*)\n)?([\s\S]*?)```/gi,
+    (m, lang, code) => tok('<pre><code>' + esc(code.replace(/\n$/, '')).replace(/>/g, '&gt;') + '</code></pre>'));
+  s = s.replace(/``([^`]+?)``/g, (m, c) => tok('<code>' + esc(c).replace(/>/g, '&gt;') + '</code>'));
+  s = s.replace(/`([^`\n]+?)`/g, (m, c) => tok('<code>' + esc(c).replace(/>/g, '&gt;') + '</code>'));
+  s = s.replace(/\\([*_~`|>#\-\[\]()\\])/g, (m, c) => tok(c === '>' ? '&gt;' : esc(c)));
+  s = s.replace(/<\/([\w -]+):(\d+)>/g, (m, name) => tok('<span class="mention">/' + esc(name) + '</span>'));
+  s = s.replace(/<a?:(\w+):(\d+)>/g, (m, name) => tok('<span class="stampchip">:' + esc(name) + ':</span>'));
+  s = s.replace(/<t:(-?\d+)(?::([tTdDfFR]))?>/g, (m, u, st) => tok('<span class="stampchip">' + esc(stampText(+u, st || 'f')) + '</span>'));
+  s = s.replace(/<@&(\d+)>/g, () => tok('<span class="mention">@rôle</span>'));
+  s = s.replace(/<@!?(\d+)>/g, () => tok('<span class="mention">@membre</span>'));
+  s = s.replace(/<#(\d+)>/g, () => tok('<span class="mention">#salon</span>'));
+  s = s.replace(/<(https?:\/\/[^\s>]+)>/g, (m, u) => tok('<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(u) + '</a>'));
+  return s;
+}
+
+const RULES = [
+  { re: /\|\|([\s\S]+?)\|\|/,                       f: (m, r) => '<span class="spoiler" tabindex="0">' + r(m[1]) + '</span>' },
+  { re: /\[([^\[\]\n]+)\]\((https?:\/\/[^\s)]+)\)/, f: (m, r) => '<a href="' + m[2] + '" target="_blank" rel="noopener">' + r(m[1]) + '</a>' },
+  { re: /\*\*\*([\s\S]+?)\*\*\*/,                   f: (m, r) => '<strong><em>' + r(m[1]) + '</em></strong>' },
+  { re: /\*\*([\s\S]+?)\*\*/,                       f: (m, r) => '<strong>' + r(m[1]) + '</strong>' },
+  { re: /__([\s\S]+?)__/,                           f: (m, r) => '<u>' + r(m[1]) + '</u>' },
+  { re: /~~([\s\S]+?)~~/,                           f: (m, r) => '<s>' + r(m[1]) + '</s>' },
+  { re: /\*([\s\S]+?)\*/,                           f: (m, r) => '<em>' + r(m[1]) + '</em>' },
+  { re: /(?<![\w_])_(?!_)([\s\S]+?)_(?![\w_])/,     f: (m, r) => '<em>' + r(m[1]) + '</em>' },
+  { re: /(https?:\/\/[^\s<\u0000]+)/,               f: m => '<a href="' + m[1] + '" target="_blank" rel="noopener">' + m[1] + '</a>' }
+];
+
+function inline(text) {
+  let best = null;
+  for (const rule of RULES) {
+    const m = rule.re.exec(text);
+    if (m && (!best || m.index < best.m.index)) best = { m, rule };
+  }
+  if (!best) return text;
+  const { m, rule } = best;
+  return text.slice(0, m.index) + rule.f(m, inline) + inline(text.slice(m.index + m[0].length));
+}
+
+const LI = /^([ \t]*)(?:([-*])|(\d+)\.)[ \t]+(.*)$/;
+const quote = inner => '<blockquote><div class="qbody">' + inner + '</div></blockquote>';
+
+function buildList(items) {
+  let html = '';
+  const stack = [];
+  for (const it of items) {
+    const want = it.level + 1;
+    while (stack.length > want) html += '</li></' + stack.pop() + '>';
+    if (stack.length === want) html += '</li><li>';
+    while (stack.length < want) {
+      const tag = it.ordered ? 'ol' : 'ul';
+      stack.push(tag);
+      html += '<' + tag + '><li>';
+    }
+    html += inline(it.content);
+  }
+  while (stack.length) html += '</li></' + stack.pop() + '>';
+  return html;
+}
+
+function parseBlocks(text) {
+  const lines = text.split('\n');
+  const buf = [];
+  let out = '', i = 0, m;
+  // les lignes de texte simple sont regroupées : un gras ou un italique
+  // peut ainsi courir sur plusieurs lignes, comme sur Discord
+  const flush = () => {
+    if (!buf.length) return;
+    out += '<div class="para">' + inline(buf.join('\n')).replace(/\n/g, '<br>') + '</div>';
+    buf.length = 0;
+  };
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^>>>(\s|$)/.test(line)) {
+      flush();
+      const rest = [line.replace(/^>>>\s?/, '')].concat(lines.slice(i + 1)).join('\n');
+      return out + quote(parseBlocks(rest));
+    }
+    if (/^>(\s|$)/.test(line)) {
+      flush();
+      const q = [];
+      while (i < lines.length && /^>(\s|$)/.test(lines[i]) && !/^>>>(\s|$)/.test(lines[i])) {
+        q.push(lines[i].replace(/^>\s?/, ''));
+        i++;
+      }
+      out += quote(parseBlocks(q.join('\n')));
+      continue;
+    }
+    if (m = line.match(/^(#{1,3})\s+(.+)$/)) {
+      flush();
+      const n = m[1].length;
+      out += '<h' + n + '>' + inline(m[2]) + '</h' + n + '>';
+      i++; continue;
+    }
+    if (m = line.match(/^-#\s+(.+)$/)) {
+      flush();
+      out += '<div class="subtext">' + inline(m[1]) + '</div>';
+      i++; continue;
+    }
+    if (LI.test(line)) {
+      flush();
+      const items = [];
+      while (i < lines.length && (m = lines[i].match(LI))) {
+        items.push({
+          level: Math.min(2, Math.floor(m[1].replace(/\t/g, '  ').length / 2)),
+          ordered: !!m[3],
+          content: m[4]
+        });
+        i++;
+      }
+      out += buildList(items);
+      continue;
+    }
+    buf.push(line);
+    i++;
+  }
+  flush();
+  return out;
+}
+
+function detok(html) {
+  let prev;
+  do { prev = html; html = html.replace(/\u0000(\d+)\u0000/g, (m, n) => TOK[n]); } while (html !== prev);
+  return html;
+}
+
+function render(raw) {
+  TOK = [];
+  return detok(parseBlocks(esc(pretokenize(raw))));
+}
+</script>
+<!-- PARSER:END -->
+
+<script>
+/* ------------------------------------------------------------------
+   Interface
+------------------------------------------------------------------ */
+const src = document.getElementById('src');
+const out = document.getElementById('out');
+const count = document.getElementById('count');
+
+function update() {
+  out.innerHTML = src.value.trim()
+    ? render(src.value)
+    : '<div class="empty">Le rendu s\'affichera ici, à l\'identique de Discord.</div>';
+  const n = src.value.length;
+  count.textContent = n + ' / 2000';
+  count.classList.toggle('over', n > 2000);
+}
+
+function focusBack(start, end) {
+  src.focus();
+  src.selectionStart = start;
+  src.selectionEnd = end;
+  update();
+}
+
+function surround(before, after) {
+  const s = src.selectionStart, e = src.selectionEnd;
+  const sel = src.value.slice(s, e);
+  src.setRangeText(before + sel + after, s, e, 'end');
+  focusBack(s + before.length, s + before.length + sel.length);
+}
+
+function lineBounds() {
+  const v = src.value;
+  const s = v.lastIndexOf('\n', src.selectionStart - 1) + 1;
+  let e = v.indexOf('\n', src.selectionEnd);
+  if (e === -1) e = v.length;
+  return [s, e];
+}
+
+function prefixLines(prefix) {
+  const [s, e] = lineBounds();
+  const block = src.value.slice(s, e).split('\n');
+  const on = block.every(l => l.startsWith(prefix));
+  const next = block.map(l => on ? l.slice(prefix.length) : prefix + l).join('\n');
+  src.setRangeText(next, s, e, 'end');
+  focusBack(s, s + next.length);
+}
+
+function prefixFirstLine(prefix) {
+  const [s] = lineBounds();
+  const rest = src.value.slice(s);
+  if (rest.startsWith(prefix)) {
+    src.setRangeText('', s, s + prefix.length, 'end');
+    focusBack(s, s);
+  } else {
+    src.setRangeText(prefix, s, s, 'end');
+    focusBack(s + prefix.length, s + prefix.length);
+  }
+}
+
+function insert(text, caretOffset) {
+  const s = src.selectionStart;
+  src.setRangeText(text, s, src.selectionEnd, 'end');
+  const c = s + (caretOffset === undefined ? text.length : caretOffset);
+  focusBack(c, c);
+}
+
+const BUTTONS = [
+  { html: '<b>G</b>',     title: 'Gras (Ctrl+B)',      run: () => surround('**', '**') },
+  { html: '<i>I</i>',     title: 'Italique (Ctrl+I)',  run: () => surround('*', '*') },
+  { html: '<u>S</u>',     title: 'Souligné (Ctrl+U)',  run: () => surround('__', '__') },
+  { html: '<s>B</s>',     title: 'Barré',              run: () => surround('~~', '~~') },
+  { html: '▮▮',           title: 'Spoiler',            run: () => surround('||', '||') },
+  { sep: true },
+  { html: 'H1',           title: 'Titre 1',            run: () => prefixLines('# ') },
+  { html: 'H2',           title: 'Titre 2',            run: () => prefixLines('## ') },
+  { html: 'H3',           title: 'Titre 3',            run: () => prefixLines('### ') },
+  { html: '-#',           title: 'Petit texte',        run: () => prefixLines('-# ') },
+  { sep: true },
+  { html: '&gt;',         title: 'Citation (par ligne)',              run: () => prefixLines('> ') },
+  { html: '&gt;&gt;&gt;', title: 'Citation longue (jusqu\'à la fin)', run: () => prefixFirstLine('>>> ') },
+  { html: '•',            title: 'Liste à puces',      run: () => prefixLines('- ') },
+  { html: '1.',           title: 'Liste numérotée',    run: () => prefixLines('1. ') },
+  { sep: true },
+  { html: '&lt;/&gt;',    title: 'Code',               run: () => surround('`', '`') },
+  { html: '▤',            title: 'Bloc de code',       run: () => surround('```\n', '\n```') },
+  { sep: true },
+  { html: '🔗',           title: 'Lien masqué',        run: () => insert('[texte](https://)', 8) },
+  { html: '🚫',           title: 'Lien sans aperçu',   run: () => surround('<', '>') },
+  { html: '🕓',           title: 'Horodatage',         run: () => insert('<t:' + Math.floor(Date.now() / 1000) + ':F>') }
+];
+
+const toolbar = document.getElementById('toolbar');
+for (const b of BUTTONS) {
+  if (b.sep) {
+    const d = document.createElement('div');
+    d.className = 'sep';
+    toolbar.appendChild(d);
+    continue;
+  }
+  const el = document.createElement('button');
+  el.innerHTML = b.html;
+  el.title = b.title;
+  el.type = 'button';
+  el.addEventListener('click', b.run);
+  toolbar.appendChild(el);
+}
+
+src.addEventListener('input', update);
+src.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'b') { e.preventDefault(); surround('**', '**'); }
+  if (k === 'i') { e.preventDefault(); surround('*', '*'); }
+  if (k === 'u') { e.preventDefault(); surround('__', '__'); }
+});
+
+out.addEventListener('click', e => {
+  const sp = e.target.closest('.spoiler');
+  if (sp) sp.classList.toggle('shown');
+});
+
+const toast = document.getElementById('toast');
+document.getElementById('copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(src.value);
+    toast.textContent = 'Copié';
+  } catch (err) {
+    toast.textContent = 'Copie refusée par le navigateur';
+  }
+  toast.classList.add('on');
+  setTimeout(() => toast.classList.remove('on'), 1400);
+});
+document.getElementById('clear').addEventListener('click', () => {
+  src.value = '';
+  focusBack(0, 0);
+});
+
+const who = document.getElementById('who');
+const whoLabel = document.getElementById('whoLabel');
+const avatar = document.getElementById('avatar');
+const color = document.getElementById('color');
+function persona() {
+  whoLabel.textContent = who.value || 'Personnage';
+  whoLabel.style.color = color.value;
+}
+who.addEventListener('input', persona);
+color.addEventListener('input', persona);
+persona();
+
+document.getElementById('stamp').textContent =
+  "Aujourd'hui à " + new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+
+src.value = `## Titre de la scène
+-# Lieu · heure · météo
+Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, c'est la mise en contexte
+*Pensée intérieure.*
+> Dialogue courant du personnage.
+**« Réplique impactante ou prononcée à haute voix. »**
+\`Voix qui vient d'ailleurs : radio, téléphone, panneau, communiqué.\`
+## **CRI OU NOM DE TECHNIQUE !**
+||Information cachée, twist, résultat de jet.||
+-# (HRP) Note hors roleplay.`;
+
+update();
+</script>
+</body>
+</html>
