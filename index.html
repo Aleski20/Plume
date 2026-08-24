@@ -1064,34 +1064,118 @@ const voileDecoupe = document.getElementById('voileDecoupe');
 const listeParties = document.getElementById('listeParties');
 const noteDecoupe = document.getElementById('noteDecoupe');
 
+const MARQUEURS = ['***', '**', '__', '~~', '||', '*', '_'];
+const EST_MOT = c => !!c && /[\w]/.test(c);
+
+// parcourt la source en appliquant les règles du parseur : ce qui est
+// échappé ou dans du code ne compte pas. Renvoie l'état des marqueurs
+// encore ouverts à la position demandée.
+function etatAu(txt, fin) {
+  let i = 0, codeBloc = false, codeLigne = false;
+  const ouverts = [];
+  const bascule = m => {
+    const k = ouverts.lastIndexOf(m);
+    if (k === -1) ouverts.push(m); else ouverts.splice(k, 1);
+  };
+  while (i < fin) {
+    if (txt[i] === '\\' && i + 1 < fin) { i += 2; continue; }
+    if (txt.startsWith('```', i)) { codeBloc = !codeBloc; i += 3; continue; }
+    if (codeBloc) { i++; continue; }
+    if (txt[i] === '`') { codeLigne = !codeLigne; i++; continue; }
+    if (codeLigne) { i++; continue; }
+    let trouve = null;
+    for (const m of MARQUEURS) {
+      if (!txt.startsWith(m, i)) continue;
+      // l'italique par tiret bas ne compte pas au milieu d'un mot
+      if (m === '_' && (EST_MOT(txt[i - 1]) || EST_MOT(txt[i + 1]))) continue;
+      trouve = m; break;
+    }
+    if (trouve) { bascule(trouve); i += trouve.length; continue; }
+    i++;
+  }
+  return { codeBloc, codeLigne, ouverts };
+}
+
+// carte des positions où aucun marqueur n'est ouvert : coupures sûres
+function pointsSurs(txt) {
+  const sur = new Uint8Array(txt.length + 1);
+  let i = 0, codeBloc = false, codeLigne = false;
+  const ouverts = [];
+  const bascule = m => {
+    const k = ouverts.lastIndexOf(m);
+    if (k === -1) ouverts.push(m); else ouverts.splice(k, 1);
+  };
+  const marquer = pos => {
+    if (!codeBloc && !codeLigne && !ouverts.length) sur[pos] = 1;
+  };
+  marquer(0);
+  while (i < txt.length) {
+    if (txt[i] === '\\' && i + 1 < txt.length) { i += 2; marquer(i); continue; }
+    if (txt.startsWith('```', i)) { codeBloc = !codeBloc; i += 3; marquer(i); continue; }
+    if (codeBloc) { i++; marquer(i); continue; }
+    if (txt[i] === '`') { codeLigne = !codeLigne; i++; marquer(i); continue; }
+    if (codeLigne) { i++; marquer(i); continue; }
+    let trouve = null;
+    for (const m of MARQUEURS) {
+      if (!txt.startsWith(m, i)) continue;
+      if (m === '_' && (EST_MOT(txt[i - 1]) || EST_MOT(txt[i + 1]))) continue;
+      trouve = m; break;
+    }
+    if (trouve) { bascule(trouve); i += trouve.length; marquer(i); continue; }
+    i++; marquer(i);
+  }
+  return sur;
+}
+
 function decouperTexte(txt, budget) {
   const parts = [];
   let reste = txt;
   while (reste.length > budget) {
+    const sur = pointsSurs(reste);
+    const plancher = Math.floor(budget * 0.3);
     const fenetre = reste.slice(0, budget + 1);
     let coupe = -1, saut = 0;
+
+    // on cherche d'abord une coupure qui ne casse aucune mise en forme
     for (const sep of ['\n\n', '\n', ' ']) {
-      const i = fenetre.lastIndexOf(sep);
-      if (i > budget * 0.3) { coupe = i; saut = sep.length; break; }
+      for (let k = fenetre.length - sep.length; k >= plancher; k--) {
+        if (fenetre.startsWith(sep, k) && sur[k]) { coupe = k; saut = sep.length; break; }
+      }
+      if (coupe !== -1) break;
+    }
+    // à défaut, on coupe au mieux et on refermera la mise en forme ouverte
+    if (coupe === -1) {
+      for (const sep of ['\n\n', '\n', ' ']) {
+        const k = fenetre.lastIndexOf(sep);
+        if (k >= plancher) { coupe = k; saut = sep.length; break; }
+      }
     }
     if (coupe === -1) { coupe = budget; saut = 0; }
-    parts.push(reste.slice(0, coupe));
-    reste = reste.slice(coupe + saut).replace(/^\n+/, '');
+
+    let debut = reste.slice(0, coupe);
+    let suite = reste.slice(coupe + saut).replace(/^\n+/, '');
+    const etat = etatAu(reste, coupe);
+
+    // referme puis rouvre ce qui restait ouvert, pour que chaque partie
+    // soit valide envoyée seule
+    if (etat.codeLigne) { debut += '`'; suite = '`' + suite; }
+    if (etat.ouverts.length) {
+      debut += etat.ouverts.slice().reverse().join('');
+      suite = etat.ouverts.join('') + suite;
+    }
+    if (etat.codeBloc) { debut += '\n```'; suite = '```\n' + suite; }
+
+    parts.push(debut);
+    reste = suite;
   }
   if (reste.trim()) parts.push(reste);
-  for (let i = 0; i < parts.length - 1; i++) {
-    if ((parts[i].match(/```/g) || []).length % 2 === 1) {
-      parts[i] += '\n```';
-      parts[i + 1] = '```\n' + parts[i + 1];
-    }
-  }
   return parts;
 }
 
 function ouvrirDecoupe() {
   const e = enveloppe();
   // marge de 8 caractères pour les délimiteurs de bloc de code éventuels
-  const budget = LIMITE - e.avant.length - e.apres.length - 8;
+  const budget = LIMITE - e.avant.length - e.apres.length - 12;
   const morceaux = decouperTexte(src.value, budget).map(m => e.avant + m + e.apres);
 
   listeParties.innerHTML = '';
@@ -1125,9 +1209,9 @@ function ouvrirDecoupe() {
     listeParties.appendChild(ligne);
   });
 
-  noteDecoupe.textContent = e.avant || e.apres
-    ? 'Ton tag Tupperbox est repris sur chaque partie. Vérifie la coupure : un gras ou un italique ouvert dans une partie et fermé dans la suivante ne fonctionnera pas.'
-    : 'Vérifie la coupure : un gras ou un italique ouvert dans une partie et fermé dans la suivante ne fonctionnera pas.';
+  noteDecoupe.textContent =
+    (e.avant || e.apres ? 'Ton tag Tupperbox est repris sur chaque partie. ' : '') +
+    'La coupure évite de casser une mise en forme. Si elle tombe au milieu d\'un gras ou d\'un italique, il est refermé puis rouvert dans la partie suivante.';
 
   voileDecoupe.hidden = false;
 }
