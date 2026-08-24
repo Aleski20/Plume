@@ -39,9 +39,11 @@ body{
   display:flex;flex-direction:column;
 }
 header{
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;gap:14px;position:relative;
   padding:12px 18px;border-bottom:1px solid var(--edge);background:var(--panel);
 }
+.secondaire{display:flex;gap:8px}
+.menu-bascule{display:none;font-size:15px;line-height:1;padding:5px 10px}
 header{align-items:baseline}
 header h1{
   margin:0;font-family:"Pinyon Script","Segoe Script","Brush Script MT",cursive;
@@ -243,7 +245,26 @@ textarea::placeholder{color:#4b505b}
 @media (max-width:860px){
   main{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
   .pane + .pane{border-left:0;border-top:1px solid var(--edge)}
-  .identite .nom{max-width:80px}
+}
+@media (max-width:640px){
+  header{gap:8px;padding:10px 12px;flex-wrap:nowrap}
+  header h1{font-size:26px}
+  .count .total{display:none}
+  .identite{padding:2px 4px}
+  .identite .nom{display:none}
+  .menu-bascule{display:inline-flex}
+  .secondaire{
+    display:none;position:absolute;top:calc(100% + 6px);right:12px;z-index:15;
+    flex-direction:column;gap:4px;padding:6px;
+    background:var(--panel);border:1px solid var(--edge);border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+  }
+  .secondaire.ouvert{display:flex}
+  .secondaire button{width:100%;text-align:left;padding:8px 14px}
+  .toolbar{gap:3px;padding:6px 8px}
+  .toolbar button{padding:4px 7px;min-width:28px}
+  #preview{font-size:15px;padding:12px 14px 30px}
+  .msg{gap:12px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -255,9 +276,12 @@ textarea::placeholder{color:#4b505b}
   <div class="tagline">Éditeur Markdown pour Roleplay</div>
   <div class="spacer"></div>
   <div id="zoneIdentite"></div>
-  <div class="count" id="count">0 / 2000</div>
-  <button id="trame" title="Réinsérer le modèle de message">Trame</button>
-  <button id="clear">Vider</button>
+  <div class="count" id="count"><span id="countN">0</span><span class="total"> / 2000</span></div>
+  <div class="secondaire" id="secondaire">
+    <button id="trame" title="Réinsérer le modèle de message">Trame</button>
+    <button id="clear">Vider</button>
+  </div>
+  <button class="menu-bascule" id="menuBascule" type="button" aria-label="Plus d'actions" aria-expanded="false">⋯</button>
   <button class="primary" id="copy">Copier</button>
 </header>
 
@@ -527,13 +551,14 @@ function render(raw) {
 const src = document.getElementById('src');
 const out = document.getElementById('out');
 const count = document.getElementById('count');
+const countN = document.getElementById('countN');
 
 function update() {
   out.innerHTML = src.value.trim()
     ? render(src.value)
     : '<div class="empty">Le rendu s\'affichera ici, à l\'identique de Discord.</div>';
   const n = texteACopier().length;
-  count.textContent = n + ' / 2000';
+  countN.textContent = n;
   count.classList.toggle('over', n > 2000);
 }
 
@@ -761,7 +786,8 @@ function peindreIdentite() {
     nom.textContent = actif.nom;
     b.append(img, nom);
   } else {
-    b.textContent = profils.length ? 'Choisir un profil' : 'Créer un profil';
+    const etroit = window.matchMedia('(max-width:640px)').matches;
+    b.textContent = etroit ? 'Profil' : (profils.length ? 'Choisir un profil' : 'Créer un profil');
   }
   b.addEventListener('click', ouvrirModale);
   zoneIdentite.appendChild(b);
@@ -921,6 +947,24 @@ document.getElementById('btnEnregistrer').addEventListener('click', () => {
   signal('Profil enregistré');
 });
 
+/* menu des actions secondaires, visible sur petit écran uniquement */
+const secondaire = document.getElementById('secondaire');
+const menuBascule = document.getElementById('menuBascule');
+function fermerMenu() {
+  secondaire.classList.remove('ouvert');
+  menuBascule.setAttribute('aria-expanded', 'false');
+}
+menuBascule.addEventListener('click', e => {
+  e.stopPropagation();
+  const ouvert = secondaire.classList.toggle('ouvert');
+  menuBascule.setAttribute('aria-expanded', String(ouvert));
+});
+secondaire.addEventListener('click', fermerMenu);
+document.addEventListener('click', e => {
+  if (!secondaire.contains(e.target) && e.target !== menuBascule) fermerMenu();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerMenu(); });
+
 document.getElementById('btnAnnuler').addEventListener('click', fermerModale);
 
 btnSupprimer.addEventListener('click', () => {
@@ -1040,6 +1084,8 @@ document.getElementById('stamp').textContent =
 
 const brouillon = stock.lire(CLE_BROUILLON);
 src.value = brouillon === null ? trameCourante() : brouillon;
+
+window.matchMedia('(max-width:640px)').addEventListener('change', peindreIdentite);
 
 peindreIdentite();
 update();
