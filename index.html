@@ -109,7 +109,6 @@ main{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
 }
 .tupper input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
 .tupper input[type=text]:disabled{opacity:.45}
-@media (max-width:640px){.tupper .libelle{display:none}}
 
 textarea{
   flex:1;resize:none;border:0;outline:0;padding:16px 18px;
@@ -261,6 +260,8 @@ textarea::placeholder{color:#4b505b}
   }
   .secondaire.ouvert{display:flex}
   .secondaire button{width:100%;text-align:left;padding:8px 14px}
+  .tupper{gap:8px;padding:6px 10px}
+  .tupper .libelle{font-size:11px}
   .toolbar{gap:3px;padding:6px 8px}
   .toolbar button{padding:4px 7px;min-width:28px}
   #preview{font-size:15px;padding:12px 14px 30px}
