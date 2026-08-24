@@ -58,6 +58,17 @@ header h1{
 .spacer{flex:1}
 .count{font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
 .count.over{color:var(--warn);font-weight:600}
+.etat-brouillon{
+  display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-dim);
+  white-space:nowrap;transition:opacity .2s;
+}
+.etat-brouillon .pastille{
+  width:6px;height:6px;border-radius:50%;background:#3a3e49;flex:0 0 6px;transition:background .2s;
+}
+.etat-brouillon.enregistre .pastille{background:#57a773}
+.etat-brouillon.attente .pastille{background:#c9a227}
+.etat-brouillon.echec{color:var(--warn)}
+.etat-brouillon.echec .pastille{background:var(--warn)}
 button{
   font:inherit;font-size:12px;color:var(--ink);background:var(--edge-soft);
   border:1px solid var(--edge);border-radius:5px;padding:5px 9px;cursor:pointer;
@@ -222,6 +233,10 @@ textarea::placeholder{color:#4b505b}
   display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;
 }
 .slot .etiquette{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .serveur{
+  max-width:100%;font-size:10px;opacity:.65;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 .ligne-trame{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   background:var(--edge-soft);border:1px solid var(--edge);border-radius:5px;padding:8px 9px;
@@ -266,6 +281,7 @@ textarea::placeholder{color:#4b505b}
   header{gap:8px;padding:10px 12px;flex-wrap:nowrap}
   header h1{font-size:26px}
   .count .total{display:none}
+  .etat-brouillon .txt{display:none}
   .identite{padding:2px 4px}
   .identite .nom{display:none}
   .menu-bascule{display:inline-flex}
@@ -294,6 +310,7 @@ textarea::placeholder{color:#4b505b}
   <div class="tagline">Éditeur Markdown pour Roleplay</div>
   <div class="spacer"></div>
   <div id="zoneIdentite"></div>
+  <div class="etat-brouillon" id="etatBrouillon" title="Sauvegarde automatique du brouillon"><span class="pastille"></span><span class="txt">Brouillon</span></div>
   <div class="count" id="count"><span id="countN">0</span><span class="total"> / 2000</span></div>
   <div class="secondaire" id="secondaire">
     <button id="trame" title="Réinsérer le modèle de message">Trame</button>
@@ -361,6 +378,11 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
     <div class="champ">
       <label for="champNom">Nom du personnage</label>
       <input type="text" id="champNom" maxlength="32" placeholder="Plume">
+    </div>
+
+    <div class="champ">
+      <label for="champServeur">Serveur</label>
+      <input type="text" id="champServeur" maxlength="32" placeholder="Où joues-tu ce personnage ?">
     </div>
 
     <div class="champ">
@@ -754,7 +776,7 @@ Narration en texte brut : actions, décor, gestes. Prononcée par le narrateur, 
 -# (HRP) Note hors roleplay.`;
 
 const AVATAR_PLUME = document.getElementById('avatar').getAttribute('src');
-const DEFAUT = { nom: 'Plume', couleur: '#5865f2', avatar: AVATAR_PLUME, trame: null, tupper: '', tupperActif: false };
+const DEFAUT = { nom: 'Plume', couleur: '#5865f2', serveur: '', avatar: AVATAR_PLUME, trame: null, tupper: '', tupperActif: false };
 
 // un profil venu du stockage est une donnée non fiable : on valide champ par champ
 function assainir(p) {
@@ -763,6 +785,7 @@ function assainir(p) {
     id: typeof p.id === 'string' ? p.id : String(Date.now() + Math.random()),
     nom: typeof p.nom === 'string' ? p.nom.slice(0, 32) : DEFAUT.nom,
     couleur: /^#[0-9a-f]{6}$/i.test(p.couleur) ? p.couleur : DEFAUT.couleur,
+    serveur: typeof p.serveur === 'string' ? p.serveur.slice(0, 32) : '',
     avatar: /^data:image\/(png|jpeg|webp);base64,/.test(p.avatar || '') ? p.avatar : DEFAUT.avatar,
     trame: typeof p.trame === 'string' ? p.trame.slice(0, 8000) : null,
     tupper: typeof p.tupper === 'string' ? p.tupper.slice(0, 64) : '',
@@ -841,6 +864,7 @@ function peindreIdentite() {
 const voile = document.getElementById('voile');
 const emplacements = document.getElementById('emplacements');
 const champNom = document.getElementById('champNom');
+const champServeur = document.getElementById('champServeur');
 const champCouleur = document.getElementById('champCouleur');
 const valeurCouleur = document.getElementById('valeurCouleur');
 const apercuAvatar = document.getElementById('apercuAvatar');
@@ -853,9 +877,10 @@ let brouillonProfil = null;
 
 function chargerFormulaire(p) {
   brouillonProfil = p
-    ? { id: p.id, nom: p.nom, couleur: p.couleur, avatar: p.avatar, trame: p.trame, tupper: p.tupper, tupperActif: p.tupperActif }
-    : { id: null, nom: '', couleur: DEFAUT.couleur, avatar: DEFAUT.avatar, trame: null, tupper: '', tupperActif: false };
+    ? { id: p.id, nom: p.nom, couleur: p.couleur, serveur: p.serveur, avatar: p.avatar, trame: p.trame, tupper: p.tupper, tupperActif: p.tupperActif }
+    : { id: null, nom: '', couleur: DEFAUT.couleur, serveur: '', avatar: DEFAUT.avatar, trame: null, tupper: '', tupperActif: false };
   champNom.value = brouillonProfil.nom;
+  champServeur.value = brouillonProfil.serveur || '';
   champCouleur.value = brouillonProfil.couleur;
   valeurCouleur.textContent = brouillonProfil.couleur;
   apercuAvatar.src = brouillonProfil.avatar;
@@ -886,6 +911,12 @@ function peindreEmplacements() {
       img.alt = '';
       et.textContent = p.nom;
       b.append(img, et);
+      if (p.serveur) {
+        const sv = document.createElement('span');
+        sv.className = 'serveur';
+        sv.textContent = p.serveur;
+        b.append(sv);
+      }
       b.addEventListener('click', () => chargerFormulaire(p));
     } else {
       const vide = document.createElement('span');
@@ -963,6 +994,7 @@ document.getElementById('btnEnregistrer').addEventListener('click', () => {
     id: brouillonProfil.id || String(Date.now()),
     nom: champNom.value.trim() || DEFAUT.nom,
     couleur: champCouleur.value,
+    serveur: champServeur.value.trim(),
     avatar: brouillonProfil.avatar || DEFAUT.avatar,
     trame: brouillonProfil.trame,
     tupper: brouillonProfil.tupper || '',
@@ -1033,17 +1065,53 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !voile.hid
 /* ------------------------------------------------------------------
    Brouillon : sauvegarde automatique, un demi-délai après la frappe
 ------------------------------------------------------------------ */
+const etatBrouillon = document.getElementById('etatBrouillon');
+const texteEtat = etatBrouillon.querySelector('.txt');
+
+function marquerEtat(etat) {
+  etatBrouillon.classList.remove('attente', 'enregistre', 'echec');
+  if (etat === 'attente') {
+    etatBrouillon.classList.add('attente');
+    texteEtat.textContent = 'Enregistrement';
+    etatBrouillon.title = 'Brouillon en cours d\'enregistrement';
+  } else if (etat === 'enregistre') {
+    etatBrouillon.classList.add('enregistre');
+    texteEtat.textContent = 'Brouillon enregistré';
+    etatBrouillon.title = 'Ton texte est enregistré dans ce navigateur';
+  } else if (etat === 'echec') {
+    etatBrouillon.classList.add('echec');
+    texteEtat.textContent = 'Non enregistré';
+    etatBrouillon.title = 'Stockage indisponible : ton texte ne survivra pas à la fermeture de l\'onglet';
+  } else {
+    texteEtat.textContent = 'Brouillon';
+    etatBrouillon.title = 'Sauvegarde automatique du brouillon';
+  }
+}
+
 let minuteur;
 src.addEventListener('input', () => {
   clearTimeout(minuteur);
+  marquerEtat('attente');
   minuteur = setTimeout(() => {
-    try { stock.ecrire(CLE_BROUILLON, src.value); } catch (e) { signal('Stockage plein, brouillon non enregistré'); }
+    try {
+      stock.ecrire(CLE_BROUILLON, src.value);
+      marquerEtat(stockageReel() ? 'enregistre' : 'echec');
+    } catch (e) {
+      marquerEtat('echec');
+      signal('Stockage plein, brouillon non enregistré');
+    }
   }, 500);
 });
 
+// le repli en mémoire ne survit pas à la fermeture de l'onglet : on le dit
+function stockageReel() {
+  try { localStorage.setItem('plume.test', '1'); localStorage.removeItem('plume.test'); return true; }
+  catch (e) { return false; }
+}
+
 document.getElementById('trame').addEventListener('click', () => {
   src.value = trameCourante();
-  try { stock.ecrire(CLE_BROUILLON, src.value); } catch (e) {}
+  try { stock.ecrire(CLE_BROUILLON, src.value); marquerEtat(stockageReel() ? 'enregistre' : 'echec'); } catch (e) { marquerEtat('echec'); }
   focusBack(src.value.length, src.value.length);
 });
 
@@ -1051,6 +1119,7 @@ document.getElementById('clear').addEventListener('click', () => {
   if (src.value.trim().length > 200 && !confirm('Vider l\'éditeur ? Le texte en cours sera perdu.')) return;
   src.value = '';
   stock.effacer(CLE_BROUILLON);
+  marquerEtat('');
   focusBack(0, 0);
 });
 
@@ -1297,6 +1366,9 @@ document.getElementById('stamp').textContent =
 
 const brouillon = stock.lire(CLE_BROUILLON);
 src.value = brouillon === null ? trameCourante() : brouillon;
+if (!stockageReel()) marquerEtat('echec');
+else if (brouillon !== null) marquerEtat('enregistre');
+else marquerEtat('');
 
 window.matchMedia('(max-width:640px)').addEventListener('change', peindreIdentite);
 
